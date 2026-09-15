@@ -1,0 +1,6 @@
+{
+  "name": "ניהול התחייבויות קהילה",
+  "description": "מערכת לניהול נדרים, תרומות ועליות לתורה עבור בתי כנסת.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

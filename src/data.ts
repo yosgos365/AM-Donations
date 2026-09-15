@@ -1,0 +1,337 @@
+import { User, Pledge } from './types';
+
+export const initialUsers: User[] = [
+  {
+    "id": "admin_user_id",
+    "phone": "0501234567",
+    "name": "גבאי ראשי",
+    "role": "admin"
+  },
+  {
+  "id": "demo_user_id",
+  "phone": "0521234567",
+  "name": "ישראל ישראלי (דמו)",
+  "role": "user"
+},
+  {
+    "id": "e17b1b54b0e8f89e",
+    "name": "אמיר אחיטוב",
+    "phone": "0532847704",
+    "role": "user"
+  },
+  {
+    "id": "9b5e4d722d341801",
+    "name": "שמואל זהר",
+    "phone": "0545984257",
+    "role": "user"
+  },
+  {
+    "id": "493b7f502806f74c",
+    "name": "מנדי גרינפלד",
+    "phone": "0543062246",
+    "role": "user"
+  },
+  {
+    "id": "7e2960343054c91a",
+    "name": "אלעזר ביטון",
+    "phone": "0584433205",
+    "role": "user"
+  },
+  {
+    "id": "3ae94676350b920e",
+    "name": "יוסי אסולין",
+    "phone": "0524670038",
+    "role": "user"
+  },
+  {
+    "id": "5b253c8a233ea362",
+    "name": "מנחם פיקל",
+    "phone": "0549718917",
+    "role": "user"
+  },
+  {
+    "id": "050567af4dbf1bfb",
+    "name": "ישראל פיקל",
+    "phone": "0544507994",
+    "role": "user"
+  },
+  {
+    "id": "af06580e6757b111",
+    "name": "צביה שפר",
+    "phone": "0544770304",
+    "role": "user"
+  },
+  {
+    "id": "6ff41c952db4214f",
+    "name": "מנחם טרנר",
+    "phone": "0527080539",
+    "role": "user"
+  },
+  {
+    "id": "8c386a36f5cc16e7",
+    "name": "מנדי אבייב",
+    "phone": "0544733117",
+    "role": "user"
+  },
+  {
+    "id": "5b9e22daa619f910",
+    "name": "יאיר יצחייק",
+    "phone": "0528770856",
+    "role": "user"
+  },
+  {
+    "id": "6fd4658f52185e6c",
+    "name": "יוסי קדוש",
+    "phone": "0526770457",
+    "role": "user"
+  },
+  {
+    "id": "bd2c225403f8db83",
+    "name": "שעיה דובוב",
+    "phone": "0523637797",
+    "role": "user"
+  },
+  {
+    "id": "441643f941812777",
+    "name": "אירית אחיטוב",
+    "phone": "0546114770",
+    "role": "user"
+  },
+  {
+    "id": "fe25314078f16e2d",
+    "name": "יצחק אנטיזדה",
+    "phone": "0584494770",
+    "role": "user"
+  },
+  {
+    "id": "7faedc9ca4cbc833",
+    "name": "מני דהן",
+    "phone": "0546549770",
+    "role": "user"
+  },
+  {
+    "id": "7c082749befdef8b",
+    "name": "נתנאל אביטבול",
+    "phone": "0549604594",
+    "role": "user"
+  },
+  {
+    "id": "e7b4cb5f0a4c431c",
+    "name": "ראובן יוספוב",
+    "phone": "0549770938",
+    "role": "user"
+  },
+  {
+    "id": "f09ff32205495dfa",
+    "name": "אריה שכרטוב",
+    "phone": "0547241770",
+    "role": "user"
+  },
+  {
+    "id": "0c05a0bb5a998d3e",
+    "name": "חיים כהן",
+    "phone": "0544847018",
+    "role": "user"
+  },
+  {
+    "id": "0970cd8723774d45",
+    "name": "ניצן סלומון",
+    "phone": "0504833350",
+    "role": "user"
+  },
+  {
+    "id": "82d48902812058ff",
+    "name": "זוהר מזרחי",
+    "phone": "0533357513",
+    "role": "user"
+  },
+  {
+    "id": "2773a3159ab3489e",
+    "name": "יוסי מיכלשוילי",
+    "phone": "0502626995",
+    "role": "user"
+  },
+  {
+    "id": "58f1b656b25dbc9b",
+    "name": "חיים דנה",
+    "phone": "0536269261",
+    "role": "user"
+  },
+  {
+    "id": "7b287a1cdb1e06a7",
+    "name": "לוי דנה",
+    "phone": "0523599932",
+    "role": "user"
+  },
+  {
+    "id": "96853730b0987aa2",
+    "name": "Goldstein Eli",
+    "phone": "0587339271",
+    "role": "user"
+  },
+  {
+    "id": "60d8c5fe0d323f4f",
+    "name": "שמואל משה הלבפינגר",
+    "phone": "0547651287",
+    "role": "user"
+  },
+  {
+    "id": "408d14facbf77a12",
+    "name": "צבי טסלר",
+    "phone": "0542327019",
+    "role": "user"
+  },
+  {
+    "id": "3322214dad8aa74e",
+    "name": "חנן נתן",
+    "phone": "0507701475",
+    "role": "user"
+  },
+  {
+    "id": "53a9a514f77f70e0",
+    "name": "בתיה נתנוב",
+    "phone": "0542208909",
+    "role": "user"
+  },
+  {
+    "id": "0288d12c46cb9d75",
+    "name": "ברוך נתנוב",
+    "phone": "0556675749",
+    "role": "user"
+  },
+  {
+    "id": "9b64c1be86f54734",
+    "name": "עמנואל אלדין",
+    "phone": "0545904086",
+    "role": "user"
+  },
+  {
+    "id": "aeb5eca308f19ae2",
+    "name": "יוסי שרון",
+    "phone": "0547705930",
+    "role": "user"
+  },
+  {
+    "id": "15385beefacaa3de",
+    "name": "שלמה רוזנברג",
+    "phone": "0515985768",
+    "role": "user"
+  },
+  {
+    "id": "8c145ae125f27a77",
+    "name": "שטערני קרוגליאק",
+    "phone": "0546761289",
+    "role": "user"
+  },
+  {
+    "id": "077512b91fecf4f4",
+    "name": "אליהן כהן",
+    "phone": "0587280044",
+    "role": "user"
+  },
+  {
+    "id": "072771de04511fa4",
+    "name": "שלום לישנר",
+    "phone": "0529059770",
+    "role": "user"
+  },
+  {
+    "id": "1dce309449896057",
+    "name": "שמואל גלינסקי",
+    "phone": "0547640782",
+    "role": "user"
+  },
+  {
+    "id": "3198e60f0070931e",
+    "name": "דוד סגל",
+    "phone": "0559822722",
+    "role": "user"
+  },
+  {
+    "id": "ef1fe6e6ee436e77",
+    "name": "אהרן סברדלוב",
+    "phone": "0506522228",
+    "role": "user"
+  },
+  {
+    "id": "133159df841cd3e3",
+    "name": "אוריאל רדי",
+    "phone": "0527707121",
+    "role": "user"
+  },
+  {
+    "id": "9f6177c15428e70e",
+    "name": "ישראל חייבי",
+    "phone": "0542319202",
+    "role": "user"
+  },
+  {
+    "id": "37ba2d2dae539f14",
+    "name": "מענדי כהן",
+    "phone": "0586086033",
+    "role": "user"
+  },
+  {
+    "id": "1b66acbf19afd338",
+    "name": "אופיר רז",
+    "phone": "0527814515",
+    "role": "user"
+  },
+  {
+    "id": "0efa61752109b2aa",
+    "name": "מנחם בן מעש",
+    "phone": "0544358772",
+    "role": "user"
+  }
+];
+
+export const initialPledges: Pledge[] = [
+  {
+    "id": "p1",
+    "userId": "demo_user_id",
+    "type": "עליית מפטיר",
+    "amount": 180,
+    "date": "2026-09-01",
+    "status": "open"
+  },
+  {
+    "id": "p2",
+    "userId": "demo_user_id",
+    "type": "נדר לבית הכנסת",
+    "amount": 250,
+    "date": "2026-09-08",
+    "status": "open"
+  },
+  {
+    "id": "p3",
+    "userId": "demo_user_id",
+    "type": "עליית שלישי",
+    "amount": 200,
+    "date": "2026-07-15",
+    "status": "open"
+  },
+  {
+    "id": "p4",
+    "userId": "demo_user_id",
+    "type": "מכירת חמץ",
+    "amount": 50,
+    "date": "2026-04-10",
+    "status": "paid",
+    "paymentMethod": "paybox",
+    "paidAt": "2026-04-15",
+    "approvedAt": "2026-04-16",
+    "receiptNumber": "10001"
+  },
+  {
+    "id": "p5",
+    "userId": "demo_user_id",
+    "type": "תרומה לקידוש",
+    "amount": 400,
+    "date": "2026-05-20",
+    "status": "paid",
+    "paymentMethod": "bank",
+    "paidAt": "2026-05-25",
+    "approvedAt": "2026-05-26",
+    "receiptNumber": "10002"
+  }
+];
