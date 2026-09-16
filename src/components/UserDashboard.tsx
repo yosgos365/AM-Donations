@@ -17,9 +17,9 @@ interface UserDashboardProps {
 export function UserDashboard({ user, pledges, onLogout, onSubmitPayment, onUpdateUser }: UserDashboardProps) {
   const [activeTab, setActiveTab] = useState<'open' | 'history' | 'settings'>('open');
   const [isAddingFamilyMember, setIsAddingFamilyMember] = useState(false);
-  const [newFamilyMember, setNewFamilyMember] = useState({ name: '', hebrewDob: { year: 5784, month: 7, day: 1 } });
+  const [newFamilyMember, setNewFamilyMember] = useState<{name: string, hebrewDob: any}>({ name: '', hebrewDob: null });
   const [isAddingYahrzeit, setIsAddingYahrzeit] = useState(false);
-  const [newYahrzeit, setNewYahrzeit] = useState({ name: '', hebrewDate: { year: 5784, month: 7, day: 1 } });
+  const [newYahrzeit, setNewYahrzeit] = useState<{name: string, hebrewDate: any}>({ name: '', hebrewDate: null });
   const [selectedPledges, setSelectedPledges] = useState<Set<string>>(new Set());
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [receiptPledge, setReceiptPledge] = useState<Pledge | null>(null);
@@ -53,7 +53,7 @@ export function UserDashboard({ user, pledges, onLogout, onSubmitPayment, onUpda
       familyMembers: [...(user.familyMembers || []), newMember]
     });
     setIsAddingFamilyMember(false);
-    setNewFamilyMember({ name: '', hebrewDob: { year: 5784, month: 7, day: 1 } });
+    setNewFamilyMember({ name: '', hebrewDob: null });
   };
 
   const handleUpdateFamilyMember = (id: string, field: string, value: any) => {
@@ -84,7 +84,7 @@ export function UserDashboard({ user, pledges, onLogout, onSubmitPayment, onUpda
       yahrzeits: [...(user.yahrzeits || []), newYz]
     });
     setIsAddingYahrzeit(false);
-    setNewYahrzeit({ name: '', hebrewDate: { year: 5784, month: 7, day: 1 } });
+    setNewYahrzeit({ name: '', hebrewDate: null });
   };
 
   const handleUpdateYahrzeit = (id: string, field: string, value: any) => {
@@ -143,12 +143,12 @@ export function UserDashboard({ user, pledges, onLogout, onSubmitPayment, onUpda
       } else {
         const link = document.createElement('a');
         link.href = image;
-        link.download = `קבלה-${receiptPledge?.receiptNumber || 'תרומה'}.png`;
+        link.download = `אישור תשלום-${receiptPledge?.receiptNumber || 'תרומה'}.png`;
         link.click();
       }
     } catch (err) {
       console.error('Failed to download receipt', err);
-      alert('אירעה שגיאה בהורדת הקבלה.');
+      alert('אירעה שגיאה בהורדת האישור תשלום.');
     }
   };
 
@@ -186,6 +186,22 @@ export function UserDashboard({ user, pledges, onLogout, onSubmitPayment, onUpda
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-6">
+
+        {(!user.hebrewDob || !user.name) && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-lg mb-6 flex items-center justify-between">
+            <div>
+              <p className="font-bold">חסרים פרטים באזור האישי</p>
+              <p className="text-sm text-amber-700">אנא עדכן את תאריך הלידה שלך ופרטים נוספים בהגדרות החשבון.</p>
+            </div>
+            <button 
+              onClick={() => setActiveTab('settings')}
+              className="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 font-medium rounded-lg text-sm transition-colors"
+            >
+              לעדכון
+            </button>
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="dashboard-tabs bg-white rounded-lg p-1 shadow-sm border border-stone-200 flex max-w-full overflow-x-auto gap-1 mb-6">
           <button
@@ -209,8 +225,8 @@ export function UserDashboard({ user, pledges, onLogout, onSubmitPayment, onUpda
         {/* Tab Content */}
 
         {activeTab === 'settings' && (
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-8">
+            <div>
               <h3 className="text-lg font-bold text-slate-800 mb-4">פרטים אישיים</h3>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -243,7 +259,7 @@ export function UserDashboard({ user, pledges, onLogout, onSubmitPayment, onUpda
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div className="border-t border-slate-100 pt-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-bold text-slate-800">בני משפחה</h3>
                 <button
@@ -326,7 +342,7 @@ export function UserDashboard({ user, pledges, onLogout, onSubmitPayment, onUpda
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div className="border-t border-slate-100 pt-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-bold text-slate-800">יארצייט</h3>
                 <button
@@ -499,7 +515,7 @@ export function UserDashboard({ user, pledges, onLogout, onSubmitPayment, onUpda
                   {pledge.status === 'paid' && pledge.receiptNumber && (
                     <button onClick={() => setReceiptPledge(pledge)} className="flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 font-medium rounded-lg border border-slate-300 transition-colors w-full sm:w-auto">
                       <Download className="w-4 h-4" />
-                      הורד קבלה ({pledge.receiptNumber})
+                      הורד אישור תשלום ({pledge.receiptNumber})
                     </button>
                   )}
                 </div>
@@ -543,7 +559,7 @@ export function UserDashboard({ user, pledges, onLogout, onSubmitPayment, onUpda
         <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md my-8">
             <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl print:hidden">
-              <h3 className="font-bold text-slate-800">הדפסת קבלה</h3>
+              <h3 className="font-bold text-slate-800">הדפסת אישור תשלום</h3>
               <div className="flex gap-2">
                 <button
                   onClick={handleDownloadReceipt}
@@ -570,9 +586,9 @@ export function UserDashboard({ user, pledges, onLogout, onSubmitPayment, onUpda
             
             {generatedReceipt ? (
               <div className="p-8 bg-white text-center rounded-b-xl">
-                <p className="text-emerald-600 font-bold mb-4">הקבלה הופקה בהצלחה!</p>
-                <p className="text-slate-600 text-sm mb-4">בגלל שאתה במצב תצוגה מקדימה, שמירת הקבלה מתבצעת כך:</p>
-                <img src={generatedReceipt} alt="קבלה" className="max-w-full h-auto border border-slate-200 shadow-sm mx-auto mb-4 rounded" />
+                <p className="text-emerald-600 font-bold mb-4">האישור תשלום הופקה בהצלחה!</p>
+                <p className="text-slate-600 text-sm mb-4">בגלל שאתה במצב תצוגה מקדימה, שמירת האישור תשלום מתבצעת כך:</p>
+                <img src={generatedReceipt} alt="אישור תשלום" className="max-w-full h-auto border border-slate-200 shadow-sm mx-auto mb-4 rounded" />
                 <p className="text-indigo-600 font-bold text-sm bg-indigo-50 p-3 rounded-lg inline-block">
                   👈 מטלפון: לחיצה ארוכה על התמונה ➔ "שמור תמונה"<br/>
                   🖱️ ממחשב: קליק ימני על התמונה ➔ "שמור תמונה בשם..."
@@ -582,9 +598,9 @@ export function UserDashboard({ user, pledges, onLogout, onSubmitPayment, onUpda
               <div id="user-receipt-content-to-download" className="p-8 print:p-0 receipt-content bg-white text-slate-900">
                 <div className="text-center mb-8 border-b-2 border-slate-100 pb-6">
                   <h2 className="text-2xl font-bold text-indigo-700 mb-1">אחוות מנחם</h2>
-                  <p className="text-slate-500 font-medium">קבלה / אישור תרומה</p>
+                  <p className="text-slate-500 font-medium">אישור תשלום / אישור תרומה</p>
                   <div className="mt-4 inline-block bg-slate-50 px-4 py-1.5 rounded-full border border-slate-200 text-sm font-mono text-slate-600">
-                    מספר קבלה: {receiptPledge.receiptNumber}
+                    מספר אישור תשלום: {receiptPledge.receiptNumber}
                   </div>
                 </div>
                 
@@ -616,7 +632,7 @@ export function UserDashboard({ user, pledges, onLogout, onSubmitPayment, onUpda
                 
                 <div className="text-center text-sm text-slate-500 pt-4 border-t-2 border-slate-100">
                   <p className="font-medium text-slate-700 mb-1">תודה רבה על תרומתך!</p>
-                  <p>הקבלה מהווה אישור על התשלום שבוצע.</p>
+                  <p>האישור תשלום מהווה אישור על התשלום שבוצע.</p>
                 </div>
               </div>
             )}

@@ -114,6 +114,10 @@ export default function App() {
   const handleUpdateUser = (id: string, name: string, phone: string) => {
     setUsers(prev => prev.map(u => u.id === id ? { ...u, name, phone } : u));
   };
+  
+  const handleDeleteUser = (id: string) => {
+    setUsers(prev => prev.filter(u => u.id !== id));
+  };
 
   const handleAddUser = (name: string, phone: string) => {
     const newUser: User = {
@@ -154,6 +158,7 @@ export default function App() {
         onAddPledge={handleAddPledge}
         onUpdateUser={handleUpdateUser}
         onAddUser={handleAddUser}
+        onDeleteUser={handleDeleteUser}
       />
     );
   }

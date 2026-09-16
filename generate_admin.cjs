@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+const fs = require('fs');
+
+const content = `import React, { useState } from 'react';
 import { User, Pledge } from '../types';
-import { LogOut, Users, FileCheck, PlusCircle, CheckCircle2, Search, Image as ImageIcon, Contact, Printer, Download, Trash2 } from 'lucide-react';
+import { LogOut, Users, FileCheck, PlusCircle, CheckCircle2, Search, Image as ImageIcon, Contact, Printer, Download } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
 interface AdminDashboardProps {
@@ -12,16 +14,13 @@ interface AdminDashboardProps {
   onAddPledge: (pledgeData: Partial<Pledge>, userName: string, phone: string) => void;
   onUpdateUser: (id: string, name: string, phone: string) => void;
   onAddUser: (name: string, phone: string) => void;
-  onDeleteUser: (id: string) => void;
 }
 
-export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge, onAddPledge, onUpdateUser, onAddUser, onDeleteUser }: AdminDashboardProps) {
+export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge, onAddPledge, onUpdateUser, onAddUser }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<'pending' | 'add' | 'all' | 'users'>('pending');
   const [searchTerm, setSearchTerm] = useState('');
   const [receiptPledge, setReceiptPledge] = useState<Pledge | null>(null);
   const [generatedReceipt, setGeneratedReceipt] = useState<string | null>(null);
-  const [userModal, setUserModal] = useState<{ isOpen: boolean; mode: 'add' | 'edit'; id?: string; name: string; phone: string }>({ isOpen: false, mode: 'add', name: '', phone: '' });
-  const [deleteConfirmModal, setDeleteConfirmModal] = useState<{ isOpen: boolean; id: string; name: string }>({ isOpen: false, id: '', name: '' });
   
   const handleDownloadReceipt = async () => {
     const receiptElement = document.getElementById('receipt-content-to-download');
@@ -40,7 +39,7 @@ export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge
       } else {
         const link = document.createElement('a');
         link.href = image;
-        link.download = `אישור תשלום-${receiptPledge?.receiptNumber || 'תרומה'}.png`;
+        link.download = \`אישור תשלום-\${receiptPledge?.receiptNumber || 'תרומה'}.png\`;
         link.click();
       }
     } catch (err) {
@@ -60,25 +59,12 @@ export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge
   const matchingUser = users.find(u => u.name === newPledgeName);
   const isExistingUser = !!matchingUser;
   
-  const openAddUserModal = () => {
-    setUserModal({ isOpen: true, mode: 'add', name: '', phone: '' });
-  };
-  
-  const openEditUserModal = (id: string, name: string, phone: string) => {
-    setUserModal({ isOpen: true, mode: 'edit', id, name, phone });
-  };
-
-  const handleSaveUser = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!userModal.name || !userModal.phone) return;
-    
-    if (userModal.mode === 'add') {
-      onAddUser(userModal.name, userModal.phone);
-    } else if (userModal.mode === 'edit' && userModal.id) {
-      onUpdateUser(userModal.id, userModal.name, userModal.phone);
-    }
-    
-    setUserModal({ isOpen: false, mode: 'add', name: '', phone: '' });
+  const handleAddNewUser = () => {
+    const newName = prompt('הכנס שם מתפלל חדש:');
+    if (!newName) return;
+    const newPhone = prompt('הכנס מספר טלפון (05X-XXXXXXX):');
+    if (!newPhone) return;
+    onAddUser(newName, newPhone);
   };
   
   const handleExportCSV = () => {
@@ -97,15 +83,15 @@ export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge
         new Date(p.date).toLocaleDateString('he-IL'),
         statusStr,
         paymentMethodStr
-      ].map(field => `"${field}"`).join(',');
+      ].map(field => \`"\${field}"\`).join(',');
     });
     
-    const csvContent = '\uFEFF' + [headers.map(h => `"${h}"`).join(','), ...rows].join('\n');
+    const csvContent = '\\uFEFF' + [headers.map(h => \`"\${h}"\`).join(','), ...rows].join('\\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `דוח_הכנסות_${new Date().toLocaleDateString('he-IL').replace(/\//g, '-')}.csv`;
+    link.download = \`דוח_הכנסות_\${new Date().toLocaleDateString('he-IL').replace(/\\//g, '-')}.csv\`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -170,9 +156,9 @@ export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge
         <div className="flex gap-2 overflow-x-auto pb-4 mb-2 scrollbar-hide">
           <button
             onClick={() => setActiveTab('pending')}
-            className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 rounded-md whitespace-nowrap ${
+            className={\`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 rounded-md whitespace-nowrap \${
               activeTab === 'pending' ? 'bg-stone-100 text-stone-900' : 'text-stone-500 hover:text-stone-700'
-            }`}
+            }\`}
           >
             <FileCheck className="w-4 h-4" />
             ממתינים לאישור
@@ -184,27 +170,27 @@ export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge
           </button>
           <button
             onClick={() => setActiveTab('all')}
-            className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 rounded-md whitespace-nowrap ${
+            className={\`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 rounded-md whitespace-nowrap \${
               activeTab === 'all' ? 'bg-stone-100 text-stone-900' : 'text-stone-500 hover:text-stone-700'
-            }`}
+            }\`}
           >
             <Users className="w-4 h-4" />
             כל ההתחייבויות
           </button>
           <button
             onClick={() => setActiveTab('add')}
-            className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 rounded-md whitespace-nowrap ${
+            className={\`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 rounded-md whitespace-nowrap \${
               activeTab === 'add' ? 'bg-stone-100 text-stone-900' : 'text-stone-500 hover:text-stone-700'
-            }`}
+            }\`}
           >
             <PlusCircle className="w-4 h-4" />
             הוספת התחייבות
           </button>
           <button
             onClick={() => setActiveTab('users')}
-            className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 rounded-md whitespace-nowrap ${
+            className={\`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 rounded-md whitespace-nowrap \${
               activeTab === 'users' ? 'bg-stone-100 text-stone-900' : 'text-stone-500 hover:text-stone-700'
-            }`}
+            }\`}
           >
             <Contact className="w-4 h-4" />
             מתפללים
@@ -312,7 +298,7 @@ export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge
             <div className="overflow-x-auto">
               <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
                 <h3 className="font-bold text-slate-800">רשימת מתפללים</h3>
-                <button onClick={openAddUserModal} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2">
+                <button onClick={handleAddNewUser} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2">
                   <PlusCircle className="w-4 h-4" />
                   הוסף מתפלל חדש
                 </button>
@@ -337,7 +323,13 @@ export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge
                         <td className="p-4 font-mono text-slate-600" dir="ltr">{u.phone}</td>
                         <td className="p-4">
                           <button
-                            onClick={() => openEditUserModal(u.id, u.name, u.phone)}
+                            onClick={() => {
+                              const newName = prompt('ערוך שם מתפלל:', u.name);
+                              const newPhone = prompt('ערוך מספר טלפון:', u.phone);
+                              if (newName && newPhone) {
+                                onUpdateUser(u.id, newName, newPhone);
+                              }
+                            }}
                             className="text-indigo-600 hover:text-indigo-800 text-sm font-medium transition-colors"
                           >
                             ערוך פרטים
@@ -380,11 +372,11 @@ export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge
                           <td className="p-4 font-bold text-slate-900">₪{pledge.amount}</td>
                           <td className="p-4 text-sm text-slate-600">{new Date(pledge.date).toLocaleDateString('he-IL')}</td>
                           <td className="p-4">
-                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
+                            <span className={\`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold \${
                               pledge.status === 'open' ? 'bg-slate-100 text-slate-700' :
                               pledge.status === 'pending' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
                               'bg-emerald-100 text-emerald-700'
-                            }`}>
+                            }\`}>
                               {pledge.status === 'open' ? 'לא שולם' : 
                                pledge.status === 'pending' ? 'ממתין לאישור' : 'שולם'}
                             </span>
@@ -428,120 +420,6 @@ export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge
           )}
         </div>
       </main>
-
-      
-      
-      {/* Delete Confirm Modal */}
-      {deleteConfirmModal.isOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-[60] overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm my-8 overflow-hidden text-center">
-            <div className="p-6">
-              <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4">
-                <Trash2 className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">מחיקת מתפלל</h3>
-              <p className="text-slate-600 text-sm mb-6">
-                האם אתה בטוח שברצונך למחוק את <strong>{deleteConfirmModal.name}</strong>? פעולה זו תסיר את המשתמש מהמערכת.
-              </p>
-              <div className="flex gap-3 justify-center">
-                <button
-                  onClick={() => setDeleteConfirmModal({ isOpen: false, id: '', name: '' })}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 font-medium rounded-lg transition-colors w-full"
-                >
-                  ביטול
-                </button>
-                <button
-                  onClick={() => {
-                    onDeleteUser(deleteConfirmModal.id);
-                    setDeleteConfirmModal({ isOpen: false, id: '', name: '' });
-                  }}
-                  className="px-4 py-2 bg-red-600 text-white font-bold rounded-lg shadow hover:bg-red-700 transition-colors w-full"
-                >
-                  מחק
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* User Modal */}
-      {userModal.isOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md my-8 overflow-hidden">
-            <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-slate-800">
-                {userModal.mode === 'add' ? 'הוספת מתפלל חדש' : 'עריכת מתפלל'}
-              </h3>
-              <button
-                onClick={() => setUserModal({ isOpen: false, mode: 'add', name: '', phone: '' })}
-                className="text-slate-400 hover:text-slate-600 transition-colors font-bold"
-              >
-                &times;
-              </button>
-            </div>
-            
-            <form onSubmit={handleSaveUser} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">שם מתפלל</label>
-                <input
-                  type="text"
-                  required
-                  value={userModal.name}
-                  onChange={(e) => setUserModal({ ...userModal, name: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                  placeholder="ישראל ישראלי"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">מספר טלפון (כניסה למערכת)</label>
-                <input
-                  type="tel"
-                  required
-                  value={userModal.phone}
-                  onChange={(e) => setUserModal({ ...userModal, phone: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-mono text-right"
-                  dir="ltr"
-                  placeholder="05X-XXXXXXX"
-                />
-              </div>
-              
-              <div className="pt-4 flex items-center justify-between mt-2">
-                <div>
-                  {userModal.mode === 'edit' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUserModal({ isOpen: false, mode: 'add', name: '', phone: '' });
-                        setDeleteConfirmModal({ isOpen: true, id: userModal.id || '', name: userModal.name });
-                      }}
-                      className="px-4 py-2 text-red-600 hover:bg-red-50 font-medium rounded-lg transition-colors flex items-center gap-2"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      מחק מתפלל
-                    </button>
-                  )}
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setUserModal({ isOpen: false, mode: 'add', name: '', phone: '' })}
-                    className="px-4 py-2 text-slate-600 hover:bg-slate-100 font-medium rounded-lg transition-colors"
-                  >
-                    ביטול
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg shadow hover:bg-indigo-700 transition-colors"
-                  >
-                    {userModal.mode === 'add' ? 'שמור מתפלל' : 'עדכן פרטים'}
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Receipt Modal */}
       {receiptPledge && (
@@ -621,13 +499,16 @@ export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge
         </div>
       )}
 
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{__html: \`
         @media print {
           body * { visibility: hidden; }
           .receipt-content, .receipt-content * { visibility: visible; }
           .receipt-content { position: absolute; left: 0; top: 0; width: 100%; padding: 40px !important; }
         }
-      `}} />
+      \`}} />
     </div>
   );
 }
+`;
+
+fs.writeFileSync('src/components/AdminDashboard.tsx', content);
