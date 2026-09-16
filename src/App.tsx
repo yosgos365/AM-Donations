@@ -80,38 +80,6 @@ export default function App() {
       return p;
     }));
   };
-
-  
-  const handleImportBulkPledges = (parsedRows: { name: string; phone: string; type: string; amount: number; date: string }[]) => {
-    let currentUsers = [...users];
-    const newPledges: Pledge[] = [];
-    
-    for (const row of parsedRows) {
-      let targetUser = currentUsers.find(u => u.phone === row.phone);
-      if (!targetUser) {
-        targetUser = {
-          id: `u${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-          name: row.name,
-          phone: row.phone,
-          role: 'user'
-        };
-        currentUsers.push(targetUser);
-      }
-      
-      newPledges.push({
-        id: `p${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-        userId: targetUser.id,
-        type: row.type,
-        amount: row.amount,
-        date: row.date,
-        status: 'open'
-      });
-    }
-    
-    setUsers(currentUsers);
-    setPledges(prev => [...newPledges, ...prev]);
-  };
-
   const handleAddPledge = (pledgeData: Partial<Pledge>, userName: string, phone: string) => {
     let targetUser = users.find(u => u.phone === phone);
     
@@ -184,7 +152,6 @@ export default function App() {
         onLogout={handleLogout}
         onApprovePledge={handleApprovePledge}
         onAddPledge={handleAddPledge}
-        onImportBulkPledges={handleImportBulkPledges}
         onUpdateUser={handleUpdateUser}
         onAddUser={handleAddUser}
       />

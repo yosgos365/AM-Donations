@@ -165,7 +165,7 @@ export function UserDashboard({ user, pledges, onLogout, onSubmitPayment, onUpda
       <header className="bg-white shadow-sm border-b border-stone-200 sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <img src="https://raw.githubusercontent.com/yosgos365/AM-Donations/main/Logo_no_text.jpeg" alt="אחוות מנחם" className="h-12 w-auto object-contain" />
+            <img src="https://raw.githubusercontent.com/yosgos365/AM-Donations/main/Logo_no_text.jpeg" alt="אחוות מנחם" className="h-12 w-auto object-contain mix-blend-multiply" />
           </div>
           <div className="flex items-center gap-4">
             <div className="text-left hidden sm:block">

@@ -12,14 +12,10 @@ interface AdminDashboardProps {
   onAddPledge: (pledgeData: Partial<Pledge>, userName: string, phone: string) => void;
   onUpdateUser: (id: string, name: string, phone: string) => void;
   onAddUser: (name: string, phone: string) => void;
-  onImportBulkPledges: (rows: any[]) => void;
 }
 
-export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge, onAddPledge, onUpdateUser, onAddUser, onImportBulkPledges }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'pending' | 'add' | 'all' | 'users' | 'import'>('pending');
-  const [importText, setImportText] = useState('');
-  const [importError, setImportError] = useState('');
-  const [importSuccess, setImportSuccess] = useState('');
+export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge, onAddPledge, onUpdateUser, onAddUser }: AdminDashboardProps) {
+  const [activeTab, setActiveTab] = useState<'pending' | 'add' | 'all' | 'users'>('pending');
   const [searchTerm, setSearchTerm] = useState('');
   const [receiptPledge, setReceiptPledge] = useState<Pledge | null>(null);
   const [generatedReceipt, setGeneratedReceipt] = useState<string | null>(null);
@@ -67,71 +63,6 @@ export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge
   // Derived state to check if the entered name matches an existing user
   const matchingUser = users.find(u => u.name === newPledgeName);
   const isExistingUser = !!matchingUser;
-
-  
-  const handleImportSubmit = () => {
-    setImportError('');
-    setImportSuccess('');
-    
-    if (!importText.trim()) {
-      setImportError('נא להדביק נתונים לייבוא.');
-      return;
-    }
-    
-    try {
-      const rows = importText.trim().split('\n').map(r => r.trim()).filter(Boolean);
-      const parsedRows = [];
-      let skipped = 0;
-      
-      // Skip header row if it exists (check if first row contains 'שם' or 'טלפון')
-      const startIndex = rows[0].includes('טלפון') ? 1 : 0;
-      
-      for (let i = startIndex; i < rows.length; i++) {
-        // Handle both tab-separated and comma-separated
-        const cols = rows[i].split(/[\t,]+/).map(c => c.trim()).filter(Boolean);
-        
-        if (cols.length >= 5) {
-          const name = cols[0];
-          const type = cols[1];
-          // date is index 2, phone index 3, amount index 4
-          const dateStr = cols[2];
-          const phone = cols[3];
-          
-          // Parse amount (remove ₪, whitespace, commas)
-          let amountStr = cols[4];
-          amountStr = amountStr.replace(/[^\d.]/g, '');
-          const amount = parseFloat(amountStr);
-          
-          if (!name || !phone || isNaN(amount)) {
-            skipped++;
-            continue;
-          }
-          
-          parsedRows.push({
-            name,
-            type,
-            date: new Date().toISOString(), // Fallback or convert Hebrew date later if needed. For now just current date as requested by standard behavior.
-            phone,
-            amount
-          });
-        } else {
-          skipped++;
-        }
-      }
-      
-      if (parsedRows.length === 0) {
-        setImportError('לא נמצאו נתונים תקינים לייבוא. ודא שהפורמט נכון.');
-        return;
-      }
-      
-      onImportBulkPledges(parsedRows);
-      setImportSuccess(`בהצלחה! יובאו ${parsedRows.length} התחייבויות.${skipped > 0 ? ` (${skipped} שורות דולגו)` : ''}`);
-      setImportText('');
-    } catch (err) {
-      setImportError('שגיאה בתהליך הייבוא.');
-    }
-  };
-
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const phoneToUse = isExistingUser ? matchingUser.phone : newPledgePhone;
@@ -173,7 +104,7 @@ export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge
         <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="bg-slate-800 p-1 rounded-lg">
-              <img src="https://raw.githubusercontent.com/yosgos365/AM-Donations/main/Logo.jpeg" alt="אחוות מנחם" className="w-10 h-auto object-contain rounded" />
+              <img src="https://raw.githubusercontent.com/yosgos365/AM-Donations/main/Logo.jpeg" alt="אחוות מנחם" className="w-10 h-auto object-contain mix-blend-multiply" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-white tracking-wide">ממשק ניהול גבאים</h1>
@@ -212,16 +143,6 @@ export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge
           >
             <Users className="w-4 h-4" />
             כל ההתחייבויות
-          </button>
-          
-          <button
-            onClick={() => setActiveTab('import')}
-            className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 rounded-md whitespace-nowrap ${
-              activeTab === 'import' ? 'bg-stone-100 text-stone-900' : 'text-stone-500 hover:text-stone-700'
-            }`}
-          >
-            <Download className="w-4 h-4" />
-            ייבוא נתונים
           </button>
 
           <button
@@ -262,43 +183,7 @@ export function AdminDashboard({ user, users, pledges, onLogout, onApprovePledge
         <div className="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
           
           
-          {activeTab === 'import' && (
-            <div className="p-8 max-w-2xl mx-auto">
-              <h2 className="text-2xl font-bold text-slate-800 mb-6 border-b border-slate-100 pb-4">ייבוא מאקסל / קובץ טקסט</h2>
-              <div className="space-y-4">
-                <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-800">
-                  <p className="font-bold mb-2">פורמט נדרש:</p>
-                  <p>הדבק לכאן את הנתונים ישירות מהאקסל. העמודות צריכות להיות בסדר הבא:</p>
-                  <code className="block bg-white p-2 mt-2 rounded border border-blue-100">
-                    שם | סוג התחייבות | תאריך | טלפון | סכום
-                  </code>
-                </div>
-                
-                <textarea
-                  value={importText}
-                  onChange={(e) => setImportText(e.target.value)}
-                  placeholder="חנן נתן    מפטיר    א תשרי תשפז    0507701475    700"
-                  className="w-full h-64 p-4 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 font-mono text-sm rtl text-left"
-                  dir="auto"
-                />
-                
-                {importError && (
-                  <div className="text-red-500 text-sm font-medium bg-red-50 p-3 rounded-lg">{importError}</div>
-                )}
-                
-                {importSuccess && (
-                  <div className="text-emerald-600 text-sm font-medium bg-emerald-50 p-3 rounded-lg">{importSuccess}</div>
-                )}
-                
-                <button
-                  onClick={handleImportSubmit}
-                  className="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg shadow hover:bg-indigo-700 transition-colors"
-                >
-                  בצע ייבוא
-                </button>
-              </div>
-            </div>
-          )}
+          
 
           {activeTab === 'add' ? (
             <div className="p-8 max-w-2xl mx-auto">
