@@ -1,5 +1,26 @@
+export interface HebrewDateValue {
+  year: number;
+  month: number;
+  day: number;
+}
+
+export interface FamilyMember {
+  id: string;
+  name: string;
+  hebrewDob: HebrewDateValue;
+}
+
+export interface Yahrzeit {
+  id: string;
+  name: string;
+  hebrewDate: HebrewDateValue;
+}
+
 export interface User {
   id: string;
+  hebrewDob?: HebrewDateValue;
+  familyMembers?: FamilyMember[];
+  yahrzeits?: Yahrzeit[];
   phone: string;
   name: string;
   role: 'admin' | 'user';

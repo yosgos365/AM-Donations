@@ -1,17 +1,25 @@
 import React, { useState } from 'react';
 import { User, Pledge } from '../types';
-import { LogOut, FileText, Check, Clock, ChevronLeft, CreditCard, Download, CheckCircle2 } from 'lucide-react';
+import { LogOut, FileText, Check, Clock, ChevronLeft, CreditCard, Download, CheckCircle2, Printer } from 'lucide-react';
+import html2canvas from 'html2canvas';
 import { PaymentModal } from './PaymentModal';
+import { Settings, Plus, Trash2 } from 'lucide-react';
+import { HebrewDatePicker, HebrewDateValue } from './HebrewDatePicker';
 
 interface UserDashboardProps {
   user: User;
   pledges: Pledge[];
   onLogout: () => void;
   onSubmitPayment: (pledgeIds: string[], method: 'paybox' | 'bank', file: File | null) => void;
+  onUpdateUser: (user: User) => void;
 }
 
-export function UserDashboard({ user, pledges, onLogout, onSubmitPayment }: UserDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'open' | 'history'>('open');
+export function UserDashboard({ user, pledges, onLogout, onSubmitPayment, onUpdateUser }: UserDashboardProps) {
+  const [activeTab, setActiveTab] = useState<'open' | 'history' | 'settings'>('open');
+  const [isAddingFamilyMember, setIsAddingFamilyMember] = useState(false);
+  const [newFamilyMember, setNewFamilyMember] = useState({ name: '', hebrewDob: { year: 5784, month: 7, day: 1 } });
+  const [isAddingYahrzeit, setIsAddingYahrzeit] = useState(false);
+  const [newYahrzeit, setNewYahrzeit] = useState({ name: '', hebrewDate: { year: 5784, month: 7, day: 1 } });
   const [selectedPledges, setSelectedPledges] = useState<Set<string>>(new Set());
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [receiptPledge, setReceiptPledge] = useState<Pledge | null>(null);
@@ -24,6 +32,75 @@ export function UserDashboard({ user, pledges, onLogout, onSubmitPayment }: User
   const historyPledges = [...pendingPledges, ...paidPledges].sort((a, b) => 
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
+
+  
+  
+  const handleUpdatePersonalInfo = (field: string, value: any) => {
+    onUpdateUser({ ...user, [field]: value });
+  };
+
+  const handleSaveFamilyMember = () => {
+    if (!newFamilyMember.name.trim()) {
+      return;
+    }
+    const newMember = {
+      id: `fm${Date.now()}`,
+      name: newFamilyMember.name,
+      hebrewDob: newFamilyMember.hebrewDob
+    };
+    onUpdateUser({
+      ...user,
+      familyMembers: [...(user.familyMembers || []), newMember]
+    });
+    setIsAddingFamilyMember(false);
+    setNewFamilyMember({ name: '', hebrewDob: { year: 5784, month: 7, day: 1 } });
+  };
+
+  const handleUpdateFamilyMember = (id: string, field: string, value: any) => {
+    const updated = (user.familyMembers || []).map(fm => 
+      fm.id === id ? { ...fm, [field]: value } : fm
+    );
+    onUpdateUser({ ...user, familyMembers: updated });
+  };
+
+  const handleRemoveFamilyMember = (id: string) => {
+    onUpdateUser({
+      ...user,
+      familyMembers: (user.familyMembers || []).filter(fm => fm.id !== id)
+    });
+  };
+
+  const handleSaveYahrzeit = () => {
+    if (!newYahrzeit.name.trim()) {
+      return;
+    }
+    const newYz = {
+      id: `yz${Date.now()}`,
+      name: newYahrzeit.name,
+      hebrewDate: newYahrzeit.hebrewDate
+    };
+    onUpdateUser({
+      ...user,
+      yahrzeits: [...(user.yahrzeits || []), newYz]
+    });
+    setIsAddingYahrzeit(false);
+    setNewYahrzeit({ name: '', hebrewDate: { year: 5784, month: 7, day: 1 } });
+  };
+
+  const handleUpdateYahrzeit = (id: string, field: string, value: any) => {
+    const updated = (user.yahrzeits || []).map(yz => 
+      yz.id === id ? { ...yz, [field]: value } : yz
+    );
+    onUpdateUser({ ...user, yahrzeits: updated });
+  };
+
+  const handleRemoveYahrzeit = (id: string) => {
+    onUpdateUser({
+      ...user,
+      yahrzeits: (user.yahrzeits || []).filter(yz => yz.id !== id)
+    });
+  };
+
 
   const totalOpen = openPledges.reduce((sum, p) => sum + p.amount, 0);
   const selectedAmount = openPledges
@@ -88,13 +165,18 @@ export function UserDashboard({ user, pledges, onLogout, onSubmitPayment }: User
       <header className="bg-white shadow-sm border-b border-stone-200 sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <span className="text-lg sm:text-xl font-semibold tracking-tight text-blue-900 whitespace-nowrap">אחוות מנחם</span>
+            <img src="https://raw.githubusercontent.com/yosgos365/AM-Donations/main/Logo_no_text.jpeg" alt="אחוות מנחם" className="h-12 w-auto object-contain" />
           </div>
           <div className="flex items-center gap-4">
             <div className="text-left hidden sm:block">
               <h1 className="text-sm font-bold text-stone-800">שלום, {user.name}</h1>
               <p className="text-xs text-stone-500">האזור האישי שלך</p>
             </div>
+            
+            <button onClick={() => setActiveTab('settings')} className={`flex items-center gap-1 p-2 rounded-lg transition-colors ${activeTab === 'settings' ? 'bg-indigo-50 text-indigo-700' : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100'}`}>
+              <Settings className="w-5 h-5" />
+              <span className="hidden sm:inline text-sm font-medium">הגדרות</span>
+            </button>
             <button onClick={onLogout} className="text-stone-500 hover:text-stone-800 flex items-center gap-1 p-2 rounded-lg hover:bg-stone-100 transition-colors">
               <LogOut className="w-5 h-5" />
               <span className="hidden sm:inline text-sm font-medium">התנתק</span>
@@ -125,6 +207,210 @@ export function UserDashboard({ user, pledges, onLogout, onSubmitPayment }: User
         </div>
 
         {/* Tab Content */}
+
+        {activeTab === 'settings' && (
+          <div className="space-y-6">
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+              <h3 className="text-lg font-bold text-slate-800 mb-4">פרטים אישיים</h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">שם מלא</label>
+                    <input
+                      type="text"
+                      value={user.name}
+                      onChange={(e) => handleUpdatePersonalInfo('name', e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">מספר טלפון</label>
+                    <input
+                      type="tel"
+                      value={user.phone}
+                      onChange={(e) => handleUpdatePersonalInfo('phone', e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <HebrewDatePicker
+                    label="תאריך לידה עברי"
+                    value={user.hebrewDob || null}
+                    onChange={(val) => handleUpdatePersonalInfo('hebrewDob', val)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold text-slate-800">בני משפחה</h3>
+                <button
+                  onClick={() => setIsAddingFamilyMember(true)}
+                  className="px-3 py-1.5 bg-indigo-50 text-indigo-600 text-sm font-bold rounded-lg hover:bg-indigo-100 transition-colors flex items-center gap-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  הוסף בן משפחה
+                </button>
+              </div>
+              <div className="space-y-4">
+
+                {isAddingFamilyMember && (
+                  <div className="p-4 bg-indigo-50/50 rounded-lg border border-indigo-100 relative">
+                    <div className="flex justify-between items-center mb-3">
+                      <h4 className="font-medium text-indigo-900">הוספת בן/בת משפחה</h4>
+                      <button onClick={() => setIsAddingFamilyMember(false)} className="text-slate-400 hover:text-slate-600 text-sm">ביטול</button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">שם בן/בת המשפחה</label>
+                        <input
+                          type="text"
+                          required
+                          value={newFamilyMember.name}
+                          onChange={(e) => setNewFamilyMember({ ...newFamilyMember, name: e.target.value })}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
+                          placeholder="שם (חובה)"
+                        />
+                      </div>
+                      <div>
+                        <HebrewDatePicker
+                          label="תאריך לידה עברי"
+                          value={newFamilyMember.hebrewDob}
+                          onChange={(val) => setNewFamilyMember({ ...newFamilyMember, hebrewDob: val })}
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        onClick={handleSaveFamilyMember}
+                        disabled={!newFamilyMember.name.trim()}
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-700 transition-colors"
+                      >
+                        שמור בן משפחה
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {(!user.familyMembers || user.familyMembers.length === 0) ? (
+                  <p className="text-slate-500 text-sm">לא הוגדרו בני משפחה.</p>
+                ) : (
+                  user.familyMembers.map((fm) => (
+                    <div key={fm.id} className="p-4 bg-slate-50 rounded-lg border border-slate-100 relative">
+                      <button onClick={() => handleRemoveFamilyMember(fm.id)} className="absolute top-4 left-4 text-slate-400 hover:text-red-500">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">שם בן/בת המשפחה</label>
+                          <input
+                            type="text"
+                            value={fm.name}
+                            onChange={(e) => handleUpdateFamilyMember(fm.id, 'name', e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
+                          />
+                        </div>
+                        <div>
+                          <HebrewDatePicker
+                            label="תאריך לידה עברי"
+                            value={fm.hebrewDob}
+                            onChange={(val) => handleUpdateFamilyMember(fm.id, 'hebrewDob', val)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold text-slate-800">יארצייט</h3>
+                <button
+                  onClick={() => setIsAddingYahrzeit(true)}
+                  className="px-3 py-1.5 bg-indigo-50 text-indigo-600 text-sm font-bold rounded-lg hover:bg-indigo-100 transition-colors flex items-center gap-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  הוסף יארצייט
+                </button>
+              </div>
+              <div className="space-y-4">
+
+                {isAddingYahrzeit && (
+                  <div className="p-4 bg-indigo-50/50 rounded-lg border border-indigo-100 relative">
+                    <div className="flex justify-between items-center mb-3">
+                      <h4 className="font-medium text-indigo-900">הוספת יארצייט</h4>
+                      <button onClick={() => setIsAddingYahrzeit(false)} className="text-slate-400 hover:text-slate-600 text-sm">ביטול</button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">שם הנפטר/ת</label>
+                        <input
+                          type="text"
+                          required
+                          value={newYahrzeit.name}
+                          onChange={(e) => setNewYahrzeit({ ...newYahrzeit, name: e.target.value })}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
+                          placeholder="שם הנפטר/ת (חובה)"
+                        />
+                      </div>
+                      <div>
+                        <HebrewDatePicker
+                          label="תאריך פטירה עברי"
+                          value={newYahrzeit.hebrewDate}
+                          onChange={(val) => setNewYahrzeit({ ...newYahrzeit, hebrewDate: val })}
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        onClick={handleSaveYahrzeit}
+                        disabled={!newYahrzeit.name.trim()}
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-700 transition-colors"
+                      >
+                        שמור יארצייט
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {(!user.yahrzeits || user.yahrzeits.length === 0) ? (
+                  <p className="text-slate-500 text-sm">לא הוגדר יארצייט.</p>
+                ) : (
+                  user.yahrzeits.map((yz) => (
+                    <div key={yz.id} className="p-4 bg-slate-50 rounded-lg border border-slate-100 relative">
+                      <button onClick={() => handleRemoveYahrzeit(yz.id)} className="absolute top-4 left-4 text-slate-400 hover:text-red-500">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">שם הנפטר/ת</label>
+                          <input
+                            type="text"
+                            value={yz.name}
+                            onChange={(e) => handleUpdateYahrzeit(yz.id, 'name', e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
+                          />
+                        </div>
+                        <div>
+                          <HebrewDatePicker
+                            label="תאריך פטירה עברי"
+                            value={yz.hebrewDate}
+                            onChange={(val) => handleUpdateYahrzeit(yz.id, 'hebrewDate', val)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'open' ? (
           <div className="space-y-4">
             {openPledges.length === 0 ? (

@@ -4,12 +4,15 @@ import { User, Pledge } from './types';
 import { Login } from './components/Login';
 import { UserDashboard } from './components/UserDashboard';
 import { AdminDashboard } from './components/AdminDashboard';
+import { Registration } from './components/Registration';
+import { HebrewDateValue } from './components/HebrewDatePicker';
 
 export default function App() {
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [pledges, setPledges] = useState<Pledge[]>(initialPledges);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loginError, setLoginError] = useState<string>('');
+  const [registeringPhone, setRegisteringPhone] = useState<string | null>(null);
 
   const handleLogin = (phone: string) => {
     setLoginError('');
@@ -17,8 +20,22 @@ export default function App() {
     if (user) {
       setCurrentUser(user);
     } else {
-      setLoginError('מספר טלפון לא נמצא במערכת. אנא פנה לגבאי להוספה.');
+      setRegisteringPhone(phone);
     }
+  };
+
+  
+  const handleRegister = (newUserData: { name: string; phone: string; hebrewDob: HebrewDateValue }) => {
+    const newUser: User = {
+      id: `u${Date.now()}`,
+      name: newUserData.name,
+      phone: newUserData.phone,
+      hebrewDob: newUserData.hebrewDob,
+      role: 'user'
+    };
+    setUsers(prev => [...prev, newUser]);
+    setCurrentUser(newUser);
+    setRegisteringPhone(null);
   };
 
   const handleAdminLogin = (password: string) => {
@@ -64,6 +81,37 @@ export default function App() {
     }));
   };
 
+  
+  const handleImportBulkPledges = (parsedRows: { name: string; phone: string; type: string; amount: number; date: string }[]) => {
+    let currentUsers = [...users];
+    const newPledges: Pledge[] = [];
+    
+    for (const row of parsedRows) {
+      let targetUser = currentUsers.find(u => u.phone === row.phone);
+      if (!targetUser) {
+        targetUser = {
+          id: `u${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+          name: row.name,
+          phone: row.phone,
+          role: 'user'
+        };
+        currentUsers.push(targetUser);
+      }
+      
+      newPledges.push({
+        id: `p${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+        userId: targetUser.id,
+        type: row.type,
+        amount: row.amount,
+        date: row.date,
+        status: 'open'
+      });
+    }
+    
+    setUsers(currentUsers);
+    setPledges(prev => [...newPledges, ...prev]);
+  };
+
   const handleAddPledge = (pledgeData: Partial<Pledge>, userName: string, phone: string) => {
     let targetUser = users.find(u => u.phone === phone);
     
@@ -90,6 +138,11 @@ export default function App() {
     setPledges(prev => [newPledge, ...prev]);
   };
 
+  const handleUpdateUserFull = (updatedUser: User) => {
+    setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
+    if (currentUser?.id === updatedUser.id) setCurrentUser(updatedUser);
+  };
+
   const handleUpdateUser = (id: string, name: string, phone: string) => {
     setUsers(prev => prev.map(u => u.id === id ? { ...u, name, phone } : u));
   };
@@ -104,7 +157,21 @@ export default function App() {
     setUsers(prev => [...prev, newUser]);
   };
 
+  
+  if (registeringPhone) {
+    return (
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4" dir="rtl">
+        <Registration 
+          initialPhone={registeringPhone} 
+          onRegister={handleRegister} 
+          onCancel={() => { setRegisteringPhone(null); setLoginError(''); }} 
+        />
+      </div>
+    );
+  }
+
   if (!currentUser) {
+
     return <Login onLogin={handleLogin} onAdminLogin={handleAdminLogin} error={loginError} />;
   }
 
@@ -117,6 +184,7 @@ export default function App() {
         onLogout={handleLogout}
         onApprovePledge={handleApprovePledge}
         onAddPledge={handleAddPledge}
+        onImportBulkPledges={handleImportBulkPledges}
         onUpdateUser={handleUpdateUser}
         onAddUser={handleAddUser}
       />
@@ -129,6 +197,7 @@ export default function App() {
       pledges={pledges.filter(p => p.userId === currentUser.id)} 
       onLogout={handleLogout}
       onSubmitPayment={handleSubmitPayment}
+      onUpdateUser={handleUpdateUserFull}
     />
   );
 }

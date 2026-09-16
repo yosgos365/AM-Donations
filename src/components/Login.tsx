@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LogIn, Lock } from 'lucide-react';
+import { LogIn, Lock, ArrowRight } from 'lucide-react';
 
 interface LoginProps {
   onLogin: (phone: string) => void;
@@ -27,13 +27,12 @@ export function Login({ onLogin, onAdminLogin, error }: LoginProps) {
         onClick={() => { setIsAdminMode(!isAdminMode); setPhone(''); setPassword(''); }} 
         className="absolute top-6 left-6 flex items-center gap-2 text-stone-600 hover:text-blue-600 font-medium transition-colors"
       >
-        <Lock className="w-5 h-5" />
-        {isAdminMode ? 'כניסת לקוח' : 'כניסת מנהל'}
+        {isAdminMode ? <ArrowRight className="w-5 h-5" /> : <><Lock className="w-5 h-5" /> <span className="text-sm sm:text-base">כניסת מנהל</span></>}
       </button>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center text-blue-600">
-          {isAdminMode ? <Lock className="w-12 h-12" /> : <LogIn className="w-12 h-12" />}
+          <img src="https://raw.githubusercontent.com/yosgos365/AM-Donations/main/Logo_no_text.jpeg" alt="אחוות מנחם" className="w-32 h-auto object-contain" />
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-stone-900">
           {isAdminMode ? 'כניסת מנהל' : 'אזור אישי - אחוות מנחם'}
